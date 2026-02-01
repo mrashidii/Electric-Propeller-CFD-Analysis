@@ -1,20 +1,23 @@
-# Electric-Propeller-CFD-Analysis
-Aerodynamic modeling of NACA 4412 propeller blades for electric aircraft. This project transitions from Bernoulli's principle to viscous Navier-Stokes analysis, implementing a custom Python solver validated against XFOIL data.
-## Code Snippet: Viscous Term Calculation
-Here is how the solver calculates the viscous diffusion term:
-
-## 📊 Simulation Results
+## 📊 Simulation Results & Code Implementation
 
 ### 1. Geometry Generation
-Analytic generation of the NACA 4412 profile using the custom Python script.
-![NACA 4412 Geometry](Geometry_Plot.png)
+**Source File:** [`naca_geometry.py`](naca_geometry.py)
+This module analytically generates the NACA 4412 airfoil coordinates using the standard 4-digit series parameterization.
 
-### 2. CFD Flow Analysis (Pressure Contours)
-Visualization of pressure coefficient ($C_p$) and streamlines at $\alpha = 6^{\circ}$. The solver captures the suction peak and stagnation point accurately.
-![CFD Results](CFD_Pressure_Contours.png)
-
-### 3. Validation against XFOIL
-Comparison of the custom solver results with standard XFOIL data ($Re=10^6$). The correlation ($R^2 > 0.98$) validates the hybrid approach.
-![Validation Plot](Validation.png)
+```python
+def generate_naca_4412(chord, num_points):
+    """
+    Generates x, y coordinates for NACA 4412 profile.
+    m = 0.04 (Max Camber), p = 0.40 (Position), t = 0.12 (Thickness)
+    """
+    # Calculate mean camber line (yc) and thickness distribution (yt)
+    yc = calculate_camber(m=0.04, p=0.40, x)
+    yt = calculate_thickness(t=0.12, x)
+    
+    # Combine to get upper and lower surface coordinates
+    x_upper = x - yt * np.sin(theta)
+    y_upper = yc + yt * np.cos(theta)
+    
+    return x_upper, y_upper
 
 

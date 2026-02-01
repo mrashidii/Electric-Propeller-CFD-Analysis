@@ -1,34 +1,50 @@
-# Electric Propeller CFD Analysis: From Bernoulli to Navier-Stokes
-
-**Author:** Mohammad Rashidi  
-**Semester:** WiSe 2025/26  
-**Description:** A Python-based aerodynamic analysis suite for the NACA 4412 airfoil, transitioning from inviscid potential flow to viscous Navier-Stokes modeling. Validated against XFOIL.
+# Electric Propeller CFD Analysis
+**Project:** Transition from Bernoulli to Navier-Stokes for NACA 4412 Airfoil  
+**Author:** Mohammad Rashidi
 
 ---
 
-## 1. Geometry Generation
-**File:** `naca_geometry.py`
-
+## 1. Geometry Generation Code
 **Description:**
-This module is responsible for generating the analytical coordinates of the **NACA 4412** profile. It implements the standard NACA 4-digit series equations to calculate the mean camber line and thickness distribution separately, then combines them to produce the upper and lower surface coordinates required for the mesh generation.
+This code generates the analytical coordinates for the **NACA 4412** airfoil. It uses the standard 4-digit series equations to calculate the thickness distribution and camber line separately, then combines them to output the upper and lower surface coordinates.
 
 ```python
+# --- File: naca_geometry.py ---
 import numpy as np
+import matplotlib.pyplot as plt
 
-def generate_naca_4412(chord=1.0, n_points=100):
-    """
-    Generates x, y coordinates for NACA 4412.
-    Parameters: m=0.04 (Max Camber), p=0.40 (Position), t=0.12 (Thickness)
-    """
-    x = np.linspace(0, chord, n_points)
+def generate_naca_4412(n_points=100):
+    # NACA 4412 Parameters
+    m = 0.04  # Max Camber
+    p = 0.40  # Position of Max Camber
+    t = 0.12  # Max Thickness
     
-    # 1. Calculate Mean Camber Line (yc)
-    # Using piecewise function for forward and aft camber
-    yc = np.where(x < 0.4 * chord,
-                  (0.04 / 0.4**2) * (2 * 0.4 * (x/chord) - (x/chord)**2),
-                  (0.04 / (1-0.4)**2) * ((1 - 2*0.4) + 2*0.4*(x/chord) - (x/chord)**2))
+    x = np.linspace(0, 1, n_points)
     
-    # 2. Calculate Thickness Distribution (yt)
-    yt = 5 * 0.12 * (0.2969 * np.sqrt(x/chord) - 0.1260*(x/chord) - ... )
+    # 1. Thickness Distribution
+    yt = 5 * t * (0.2969 * np.sqrt(x) - 0.1260 * x - 0.3516 * x**2 + 
+                  0.2843 * x**3 - 0.1015 * x**4)
     
-    return x, yc, yt
+    # 2. Camber Line
+    yc = np.where(x <= p, 
+                  (m / p**2) * (2 * p * x - x**2), 
+                  (m / (1 - p)**2) * ((1 - 2 * p) + 2 * p * x - x**2))
+    
+    # 3. Upper & Lower Surfaces
+    theta = np.arctan(np.gradient(yc, x))
+    x_upper = x - yt * np.sin(theta)
+    y_upper = yc + yt * np.cos(theta)
+    x_lower = x + yt * np.sin(theta)
+    y_lower = yc - yt * np.cos(theta)
+    
+    return x_upper, y_upper, x_lower, y_lower
+
+# Visualization
+xu, yu, xl, yl = generate_naca_4412()
+plt.figure(figsize=(10, 3))
+plt.plot(xu, yu, 'b')
+plt.plot(xl, yl, 'b')
+plt.title("NACA 4412 Geometry")
+plt.axis('equal')
+plt.grid(True)
+# plt.savefig("Slide03_Geometry_Plot.png")
